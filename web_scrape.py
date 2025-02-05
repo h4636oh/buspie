@@ -22,12 +22,6 @@ import json
 from generate_url import generate_paytm_bus_url
 
 def get_bus_data(url: str):
-    """
-    Scrapes bus details from the Paytm bus search page.
-    
-    :param url: Paytm bus search URL
-    :return: List of bus details in JSON format
-    """
     options = Options()
     options.add_argument("--headless")
     service = Service("chromedriver")
@@ -70,6 +64,3 @@ def get_bus_data(url: str):
     
     driver.quit()
     return json.dumps(buses, indent=4)
-
-url = generate_paytm_bus_url("delhi", "mumbai", "2025-02-10")
-print(get_bus_data(url))
