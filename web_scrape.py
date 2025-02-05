@@ -12,14 +12,11 @@
 # RATING: //div[@class="IHKeM"]//div[@class="eoyaT"]/div
 # SEATS AVAILABLE: //div[@class="IHKeM"]//div[@class="UxGbP"][1] // returns a text needs to be split by space and gets index 0 item
 
-from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 import json
-
-from generate_url import generate_paytm_bus_url
 
 def get_bus_data(url: str):
     options = Options()
