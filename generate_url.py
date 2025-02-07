@@ -16,3 +16,11 @@ def generate_paytm_bus_url(source, destination, journey_date):
         return url
     except ValueError:
         return "Invalid date format. Use YYYY-MM-DD."
+
+if __name__ == "__main__":
+    source = input("Enter the source city: ")
+    destination = input("Enter the destination city: ")
+    journey_date = input("Enter the journey date (YYYY-MM-DD): ")
+    
+    url = generate_paytm_bus_url(source, destination, journey_date)
+    print(url)

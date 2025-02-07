@@ -1,46 +1,50 @@
-# XPATHS
-# EACH CARD DIV: //div[@class="IHKeM"]
-# BUS NAME: //div[@class="IHKeM"]//div[@class="+iUf5"]
-# BUS TYPE: //div[@class="IHKeM"]//div[@class="G88l9"]
-# DEPATURE TIME: //div[@class="IHKeM"]//div[@class="wYtCy"]//div[@class="_4rWgi"]
-# DEPATURE DATE: //div[@class="IHKeM"]//div[@class="wYtCy"]//div[@class="C3vrs"]
-# ARRIVAL TIME: //div[@class="IHKeM"]//div[@class="EjC2U"]//div[@class="_4rWgi"]
-# ARRIVAL DATE: //div[@class="IHKeM"]//div[@class="EjC2U"]//div[@class="_4rWgi"]
-# DURATION: //div[@class="IHKeM"]//div[@class="_1D2hF"]
-# FINAL PRICE: //div[@class='IHKeM']//span[@class="A2eT9 F+C81"]
-# INITIAL PRICE: //div[@class='IHKeM']//span[@class="i6vdL ifd4l"]
-# RATING: //div[@class="IHKeM"]//div[@class="eoyaT"]/div
-# SEATS AVAILABLE: //div[@class="IHKeM"]//div[@class="UxGbP"][1] // returns a text needs to be split by space and gets index 0 item
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import json
 
-def get_bus_data(url: str):
+def get_bus_data(url: str, limit: int = 10):
     options = Options()
     options.add_argument("--headless")
-    service = Service("chromedriver")
+    service = Service("/usr/bin/chromedriver")
     driver = webdriver.Chrome(service=service, options=options)
     driver.get(url)
 
+    # Explicit wait for the main container of bus cards to load
+    wait = WebDriverWait(driver, 15)
+    wait.until(EC.presence_of_element_located((By.XPATH, "//div[@class='IHKeM']")))
+
     buses = []
-    cards = driver.find_elements(By.XPATH, "//div[@class='IHKeM']")
+    cards = driver.find_elements(By.XPATH, "//div[@class='IHKeM']")[:limit]
 
     for card in cards:
         try:
-            bus_name = card.find_element(By.XPATH, ".//div[@class='+iUf5']").text
+            bus_name = wait.until(EC.presence_of_element_located((By.XPATH, ".//div[@class='+iUf5']"))).text
             bus_type = card.find_element(By.XPATH, ".//div[@class='G88l9']").text
             departure_time = card.find_element(By.XPATH, ".//div[@class='wYtCy']//div[@class='_4rWgi']").text
             departure_date = card.find_element(By.XPATH, ".//div[@class='wYtCy']//div[@class='C3vrs']").text
             arrival_time = card.find_element(By.XPATH, ".//div[@class='EjC2U']//div[@class='_4rWgi']").text
-            arrival_date = card.find_element(By.XPATH, ".//div[@class='EjC2U']//div[@class='_4rWgi']").text
+            arrival_date = card.find_element(By.XPATH, ".//div[@class='EjC2U']//div[@class='C3vrs']").text
             duration = card.find_element(By.XPATH, ".//div[@class='_1D2hF']").text
-            final_price = card.find_element(By.XPATH, ".//span[@class='A2eT9 F+C81']").text
-            initial_price = card.find_element(By.XPATH, ".//span[@class='i6vdL ifd4l']").text
-            rating = card.find_element(By.XPATH, ".//div[@class='eoyaT']/div").text
-            seats_available = card.find_element(By.XPATH, ".//div[@class='UxGbP'][1]").text.split()[0]
+
+            try:
+                final_price_element = card.find_element(By.XPATH, ".//span[@class='A2eT9 F+C81']")
+                final_price = final_price_element.text[1:]
+            except:
+                final_price = "N/A"
+
+            try:
+                rating = card.find_element(By.XPATH, ".//div[@class='eoyaT']/div").text
+            except:
+                rating = "N/A"
+
+            try:
+                seats_available = card.find_element(By.XPATH, ".//div[@class='UxGbP'][1]").text.split()[0]
+            except:
+                seats_available = "N/A"
 
             bus_info = {
                 "bus_name": bus_name,
@@ -51,7 +55,6 @@ def get_bus_data(url: str):
                 "arrival_date": arrival_date,
                 "duration": duration,
                 "final_price": final_price,
-                "initial_price": initial_price,
                 "rating": rating,
                 "seats_available": seats_available,
                 "url": url
@@ -59,6 +62,12 @@ def get_bus_data(url: str):
             buses.append(bus_info)
         except Exception as e:
             print(f"Error extracting data for a bus: {e}")
-    
+
     driver.quit()
     return json.dumps(buses, indent=4)
+
+if __name__ == "__main__":
+    url = input("Enter the URL: ")
+    bus_data = get_bus_data(url)
+    print(bus_data)
+
