@@ -53,7 +53,8 @@ def get_bus_data(url: str):
                 "final_price": final_price,
                 "initial_price": initial_price,
                 "rating": rating,
-                "seats_available": seats_available
+                "seats_available": seats_available,
+                "url": url
             }
             buses.append(bus_info)
         except Exception as e:
